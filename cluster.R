@@ -126,28 +126,32 @@ ppCluster <- function(df, merged.number, merged.rate, merged.size = "max", rep.M
     # どのクラスタに2つ以上サンプルがあるか
     vec.merged.cluster.number <- which(plyr::count(clust.k)$freq > 1)
     # 代表点を繰り返し追加する
-    for(cn in vec.merged.cluster.number){
-      vec.targets <- vector()
-      for(cn2 in 1:length(clust.k)){
-        if(cn == clust.k[cn2]){
-          vec.targets <- append(vec.targets, cn2)
+    if(length(vec.merged.cluster.number) > 0){
+      for(cn in vec.merged.cluster.number){
+        vec.targets <- vector()
+        for(cn2 in 1:length(clust.k)){
+          if(cn == clust.k[cn2]){
+            vec.targets <- append(vec.targets, cn2)
+          }
         }
+        vec.target.sample <- clust.df$order[vec.targets]
+        df.target <- df.oneclass[vec.target.sample,]
+        # 代表点求める
+        if(merged.size == "max"){
+          ans <- getRepresentativeSample(df.target, size = nrow(df.target), method = rep.Method)
+        }else{
+          ans <- getRepresentativeSample(df.target, size = merged.size, method = rep.Method)
+        }
+        ## 代表点を追加
+        df.oneclass.new <- rbind(df.oneclass.new, ans)
+        setnames(df.oneclass.new, names(df.oneclass))
       }
-      vec.target.sample <- clust.df$order[vec.targets]
-      df.target <- df.oneclass[vec.target.sample,]
-      # 代表点求める
-      if(merged.size == "max"){
-        ans <- getRepresentativeSample(df.target, size = nrow(df.target), method = rep.Method)
-      }else{
-        ans <- getRepresentativeSample(df.target, size = merged.size, method = rep.Method)
-      }
-      ## 代表点を追加
-      df.oneclass.new <- rbind(df.oneclass.new, ans)
-      setnames(df.oneclass.new, names(df.oneclass))
+    }else{
+     df.oneclass.new <- df.oneclass 
     }
-    df.new <- rbind_list(df.new, mutate(df.oneclass.new, cl))
+    df.new <- rbind(df.new, mutate(df.oneclass.new, cl))
   }
   setnames(df.new, names(df))
-  return(df.new)
+  return(tbl_df(df.new))
 }
 
