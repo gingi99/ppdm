@@ -95,12 +95,13 @@ getRepresentativeSample <- function(df, size=1, method="Randomed"){
 ## クラスタリングによるデータ圧縮関数
 ppCluster <- function(df, merged.number, merged.rate, merged.size = "max", rep.Method = "Randomed"){
   df.new <- tbl_df(data.frame())
-  vec.classes      <-  select(df, ncol(df))[[1]]
+  #vec.classes <- df[,ncol(df)][[1]]
+  vec.classes      <-  dplyr::select(df, 5)[[1]]
   vec.classes.uniq <- unique(vec.classes)
   for(cl in vec.classes.uniq){
     print(cl)
     df[which(vec.classes == cl),] %>%
-      select(1:(ncol(df)-1)) -> df.oneclass
+      dplyr::select(1:(ncol(df)-1)) -> df.oneclass
     list.df.oneclass <- do.call(Zip, df.oneclass)    
     mat.df.dist <- matrix(0.0, nrow=nrow(df.oneclass), ncol=nrow(df.oneclass))
     for(i in 1:(nrow(df.oneclass)-1)){
