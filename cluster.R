@@ -96,7 +96,7 @@ getRepresentativeSample <- function(df, size=1, method="Randomed"){
 ppCluster <- function(df, merged.number, merged.rate, merged.size = "max", rep.Method = "Randomed"){
   df.new <- tbl_df(data.frame())
   #vec.classes <- df[,ncol(df)][[1]]
-  vec.classes      <-  dplyr::select(df, 5)[[1]]
+  vec.classes      <-  dplyr::select(df, ncol(df))[[1]]
   vec.classes.uniq <- unique(vec.classes)
   for(cl in vec.classes.uniq){
     print(cl)
