@@ -95,7 +95,6 @@ getRepresentativeSample <- function(df, size=1, method="Randomed"){
 ## クラスタリングによるデータ圧縮関数
 ppCluster <- function(df, merged.number, merged.rate, merged.size = "max", rep.Method = "Randomed"){
   df.new <- tbl_df(data.frame())
-  #vec.classes <- df[,ncol(df)][[1]]
   vec.classes      <-  dplyr::select(df, ncol(df))[[1]]
   vec.classes.uniq <- unique(vec.classes)
   for(cl in vec.classes.uniq){
@@ -121,7 +120,11 @@ ppCluster <- function(df, merged.number, merged.rate, merged.size = "max", rep.M
     vec.targeted.sample <- vector()
     sample.number <- nrow(df.oneclass)
     # k個のクラスタを作る
-    clust.k <- cutree(clust.df, k=round((sample.number - merged.number)*(1.0-merged.rate)))
+    knum <- round((sample.number - merged.number)*(1.0-merged.rate))
+    if(knum == 0){
+      knum <- 1
+    }
+    clust.k <- cutree(clust.df, k=knum)
     # 圧縮サンプルを削除
     df.oneclass.new <- df.oneclass[-which(duplicated2(clust.k)),]
     # どのクラスタに2つ以上サンプルがあるか
