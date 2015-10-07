@@ -122,3 +122,20 @@ calInformationMetrics <- function(ori_vec, ano_vec){
    return((length(unique(ano_vec)) - 1) / length(unique(ori_vec)))
 }
 
+## Information loss
+## greedy_k_member_clusteringの計算で使用。2007
+calInformationLoss <- function(df.cx){
+  ans <- 0
+  list.df.cx <- do.call(Zip, df.cx)    
+  for(i in 1:(nrow(df.cx)-1)){
+    for(j in (i+1):nrow(df.cx)){
+      x <- list.df.cx[[i]] 
+      y <- list.df.cx[[j]]
+      ans <- ans + dist_kusunoki(x,y)
+    }
+  }
+  return(ans)
+}
+
+
+
