@@ -1,14 +1,13 @@
 # k-member クラスタリング
 greedy_k_member_clustering <- function(df, k){
-  df.original <- df
+  df <- df.original
   if(nrow(df) <= k){
     warning("kより小さい数のデータです")
     return(df)
   }
   results <- list()
-  ind.sample <- sample(1:nrow(df), 1, replace=F)
-  
   while(nrow(df) >= k){
+    ind.sample <- sample(1:nrow(df), 1, replace=F)
     ind.furthest.sample <- find_furthest_record(df, ind.sample)
     df <- df[-ind.furthest.sample,]
     list.cluster <- list()
@@ -16,12 +15,13 @@ greedy_k_member_clustering <- function(df, k){
     while(length(list.cluster) < k){
       ind.best.sample <- find_best_record(df, list.cluster)
       df <- df[-ind.best.sample,]
-      list.cluster <- list.append(list.cluster, ind.best.sample)
+      list.cluster <- list.append(list.cluster, df[ind.best.sample,])
     }
     names(list.cluster) <- paste("member",1:length(list.cluster),sep="")
     results <- list.append(results, list.cluster)
   }
   names(results) <- paste("cluster",1:length(results),sep="")
+  # ここから
   while(nrow(df) > 0){
     ind.sample <- sample(1:nrow(df), 1, replace=F)
     df <- df[-ind.sample,]
