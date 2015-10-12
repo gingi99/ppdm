@@ -9,24 +9,25 @@ greedy_k_member_clustering <- function(df, k){
   while(nrow(df) >= k){
     ind.sample <- sample(1:nrow(df), 1, replace=F)
     ind.furthest.sample <- find_furthest_record(df, ind.sample)
-    df <- df[-ind.furthest.sample,]
     list.cluster <- list()
     list.cluster <- list.append(list.cluster, df[ind.furthest.sample,])
+    df <- df[-ind.furthest.sample,]
     while(length(list.cluster) < k){
       ind.best.sample <- find_best_record(df, list.cluster)
-      df <- df[-ind.best.sample,]
       list.cluster <- list.append(list.cluster, df[ind.best.sample,])
+      df <- df[-ind.best.sample,]
     }
     names(list.cluster) <- paste("member",1:length(list.cluster),sep="")
     results <- list.append(results, list.cluster)
   }
   names(results) <- paste("cluster",1:length(results),sep="")
-  # ここから
   while(nrow(df) > 0){
     ind.sample <- sample(1:nrow(df), 1, replace=F)
+    best.cluster <- find_best_cluster(results, df[ind.sample,])
+    results <- aaa
+    results[[best.cluster]] <- list.append(results[[best.cluster]], df[ind.sample,])
+    names(results[[best.cluster]]) <- paste("member",1:length(results[[best.cluster]]),sep="")
     df <- df[-ind.sample,]
-    best.cluster <- find_best_cluster(results, ind.sample)
-    #list.map(results, cluster3)
   }
   return(results)
 }
@@ -74,8 +75,21 @@ find_best_record <- function(df, list.cluster){
 }
 
 # 指定したサンプル（レコード）に最も入るべきクラスタを返す
-find_best_cluster <- function(clusters, record){
+find_best_cluster <- function(clusters, df.record){
   best_cluster <- ""
-  
+  n_cluster <- length(clusters)
+  vec.information.loss <- sapply(clusters, function(x){
+    df.x <- list.stack(x)
+    df.cx <- rbind(df.x, df.record)
+    source("~/R/ppdm/get_PPDM_Measure.R")
+    return(calInformationLoss(df.cx))
+  })
+  minValue <- min(vec.information.loss)
+  ind.minValue <- which(vec.information.loss == minValue)
+  if(length(ind.minValue) == 1){
+    best_cluster <- names(ind.minValue)
+  }else{
+    best_cluster <- names(ind.minValue[1])
+  }
   return(best_cluster)
 }
