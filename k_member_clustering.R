@@ -3,6 +3,21 @@ library(rlist)
 source("~/R/ppdm/cluster.R")
 source("~/R/ppdm/get_PPDM_Measure.R")
 
+# main関数
+get_k_member_df <- function(df, k = 3, merged.size = "max", rep.Method = "Merged"){
+  vec.classes      <-  dplyr::select(df, ncol(df))[[1]]
+  vec.classes.uniq <- unique(vec.classes)
+  list.df <- lapply(vec.classes.uniq, function(x){
+    df[which(vec.classes == x),] %>%
+      dplyr::select(1:(ncol(df)-1)) -> df.oneclass
+    list.df.oneclass <- greedy_k_member_clustering(df.oneclass, k)
+    create_k_df_from_k_cluster(list.df.oneclass, merged.size, rep.Method) %>%
+      mutate(class = x) -> df.k.member
+    return(df.k.member)
+  })
+  return(tbl_df(list.stack(list.df)))
+}
+
 # k-memberクラスタリングの結果から、k匿名性を満たしたデータ(df)を作る
 create_k_df_from_k_cluster <- function(k_clusters, 
                                        merged.size = "max", 
@@ -20,7 +35,6 @@ create_k_df_from_k_cluster <- function(k_clusters,
 
 # k-member クラスタリング
 greedy_k_member_clustering <- function(df, k){
-  df <- df.original
   if(nrow(df) <= k){
     warning("kより小さい数のデータです")
     return(df)
@@ -44,7 +58,6 @@ greedy_k_member_clustering <- function(df, k){
   while(nrow(df) > 0){
     ind.sample <- sample(1:nrow(df), 1, replace=F)
     best.cluster <- find_best_cluster(results, df[ind.sample,])
-    results <- aaa
     results[[best.cluster]] <- list.append(results[[best.cluster]], df[ind.sample,])
     names(results[[best.cluster]]) <- paste("member",1:length(results[[best.cluster]]),sep="")
     df <- df[-ind.sample,]
