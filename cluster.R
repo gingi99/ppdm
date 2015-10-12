@@ -40,18 +40,28 @@ library(gdata)
 ## 楠木さんの距離関数
 dist_kusunoki <- function(x, y){
   len <- length(x)
-  ans <- 1.0
+  ans <- 0.0
   for(i in 1:len){
-    if(x[[i]] == "numeric"){
-      v <- (x[[i]] - y[[i]])/(3.0 * sd)
-      if(v > 1.0){
+    # 両要素ともNAなら0
+    if(all(is.na(c(x[[i]], y[[i]])))){
+      v <- 0.0
+    } else {
+      # どちらかがNAなら1
+      if(any(is.na(c(x[[i]], y[[i]])))){
         v <- 1.0
-      }
-    }else{
-      if(x[[i]] == y[[i]]){
-        v <- 0.0
       }else{
-        v <- 1.0
+        if(x[[i]] == "numeric"){
+          v <- (x[[i]] - y[[i]])/(3.0 * sd)
+          if(v > 1.0){
+            v <- 1.0
+          }
+        }else{
+          if(x[[i]] == y[[i]]){
+            v <- 0.0
+          }else{
+            v <- 1.0
+          }
+        }  
       }
     }
     ans <- ans + v
@@ -114,7 +124,6 @@ ppCluster <- function(df, merged.number, merged.rate, merged.size = "max", rep.M
     #　クラスター分析で距離が近いサンプルを決定
     clust.df <- hclust(as.dist(mat.df.dist), method = 'ward.D2')
     #plot(clust.df, hang=-1)
-    
     # パラメータの数だけ、最も近いサンプル同士をマージしたものを作成
     df.merged <- tbl_df(data.frame())
     vec.targeted.sample <- vector()
