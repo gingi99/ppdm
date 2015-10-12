@@ -1,3 +1,23 @@
+# library
+library(rlist)
+source("~/R/ppdm/cluster.R")
+source("~/R/ppdm/get_PPDM_Measure.R")
+
+# k-memberクラスタリングの結果から、k匿名性を満たしたデータ(df)を作る
+create_k_df_from_k_cluster <- function(k_clusters, 
+                                       merged.size = "max", 
+                                       rep.Method = "Merged"){
+  list.df <- lapply(k_clusters, function(x){
+    df.x <- list.stack(x)
+    if(merged.size == "max"){
+      return(getRepresentativeSample(df.x, size = nrow(df.x), method = rep.Method))
+    }else{
+      return(getRepresentativeSample(df.x, size = merged.size, method = rep.Method))
+    }
+  })
+  return(list.stack(list.df))
+}
+
 # k-member クラスタリング
 greedy_k_member_clustering <- function(df, k){
   df <- df.original
@@ -36,7 +56,6 @@ greedy_k_member_clustering <- function(df, k){
 # 距離関数は、dist_kusunoki。ゆくゆくは距離関数を自由に変更できるようにする。
 find_furthest_record <- function(df, ind.sample){
   furthest_record <- 0
-  source("~/R/ppdm/cluster.R")
   list.df <- do.call(Zip, df)
   vec.dist <- sapply(list.df, function(record){
     target <- list.df[[ind.sample]]
@@ -56,12 +75,10 @@ find_furthest_record <- function(df, ind.sample){
 find_best_record <- function(df, list.cluster){
   best_record <- 0
   df.cluster <- list.stack(list.cluster)
-  source("~/R/ppdm/cluster.R")
   list.df <- do.call(Zip, df)
   vec.information.loss <- sapply(list.df, function(x){
     df.x <- list.stack(list(x))
     df.cx <- rbind(df.cluster, df.x)
-    source("~/R/ppdm/get_PPDM_Measure.R")
     return(calInformationLoss(df.cx))
   })
   minValue <- min(vec.information.loss)
@@ -81,7 +98,6 @@ find_best_cluster <- function(clusters, df.record){
   vec.information.loss <- sapply(clusters, function(x){
     df.x <- list.stack(x)
     df.cx <- rbind(df.x, df.record)
-    source("~/R/ppdm/get_PPDM_Measure.R")
     return(calInformationLoss(df.cx))
   })
   minValue <- min(vec.information.loss)
